@@ -14,6 +14,11 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
+from pymongo import *
+
+client = MongoClient()
+db = client['messages']
+message_table = db['message-pool']
 
 def email(to,subject,body):
     body = body + "\n\n -------------------------------------\n\n"+" This is an Auto Generated Email. Please do not reply."
@@ -46,3 +51,30 @@ def signup(request):
 			return JsonResponse({ 'username': username, 'rollnumber': rollnumber, 'password': password })
 
 	return JsonResponse({ 'error': error }, status=500)
+
+@csrf_exempt
+def send_message(request):
+	message_map = {
+		"from":request.data.get('user_from'),
+		"to":request.data.get('user_to'),
+		"body":request.data.get('body'),
+		"title":request.data.get('title'),
+	}
+	message_table.insert_one(message_map)
+	return HttpResponse("Message Sent!")
+
+def inbox(request,username):
+	messages_dict = []
+	messages_inbox = message_table.find({"to":username})
+	for messages in messages_inbox:
+		message_map = {
+			"From - ":messages["from"],
+			"Title - ":messages["title"],
+			"Body - ":messages["body"],
+		}
+		messages_dict.append(message_map)
+	messages_dict = json.decode(messages_dict)
+	return HttpResponse(messages_dict)
+
+
+
