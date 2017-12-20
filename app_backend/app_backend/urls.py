@@ -7,5 +7,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/$', index),
     url(r'^api/signup/$', signup),
-    url(r'^(?P<path>.*)$', serve, {'document_root':'../app_frontend'}),
+    # url(r'^(?P<path>.*)$', serve, {'document_root':'../app_frontend'}),
 ]
